@@ -72,7 +72,7 @@ app.post("/order-update-callback", (req, res) => {
         value: 0.00
       },
       type: SHIPPING,
-      description: Free Shipping,
+      description: FreeShipping,
       selected: true
     }
     ]
