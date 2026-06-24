@@ -61,18 +61,18 @@ app.post("/order-update-callback", (req, res) => {
   return res.status(200).json({
     id: body.id,
     amount: {
-    currency_code: USD,
-    value: 10.00
+    currency_code: "USD",
+    value: "10.00"
     },
     shipping_options: [
     {
-      id: 1,
+      id: "1",
       amount: {
-        currency_code: USD,
-        value: 0.00
+        currency_code: "USD",
+        value: "0.00"
       },
-      type: SHIPPING,
-      description: FreeShipping,
+      type: "SHIPPING",
+      description: "Free Shipping",
       selected: true
     }
     ]
