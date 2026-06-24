@@ -4,24 +4,7 @@ const app = express();
 app.use(express.json());
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const BLOCKED_ZIP_CODES = ["29200", "29201", "95123"];
-
-const DEFAULT_SHIPPING_OPTIONS = [
-  {
-    id: "SHIP_123",
-    label: "Standard Shipping",
-    type: "SHIPPING",
-    selected: true,
-    amount: { currency_code: "USD", value: "0.00" },
-  },
-  {
-    id: "SHIP_456",
-    label: "Express Shipping",
-    type: "SHIPPING",
-    selected: false,
-    amount: { currency_code: "USD", value: "9.99" },
-  },
-];
+const BLOCKED_ZIP_CODES = ["29200", "29201", "29202", "95123"];
 
 // ─── Health check ─────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
@@ -37,12 +20,10 @@ app.post("/order-update-callback", (req, res) => {
   console.log(JSON.stringify(body, null, 2));
   console.log("──────────────────────────────────────");
 
-  const shippingAddress = body?.shipping_address || null;
-  const postalCode = shippingAddress?.postal_code || null;
-
+  const postalCode = body?.shipping_address?.postal_code || null;
   console.log(`Postal code received: ${postalCode}`);
 
-  // ── ADDRESS_ERROR ─────────────────────────────────────────────────────────
+  // ── ADDRESS_ERROR: blocked zip codes ──────────────────────────────────────
   if (postalCode && BLOCKED_ZIP_CODES.includes(postalCode)) {
     console.log(`Blocked zip: ${postalCode} → ADDRESS_ERROR`);
     return res.status(422).json({
@@ -56,25 +37,44 @@ app.post("/order-update-callback", (req, res) => {
     });
   }
 
-  // ── Happy path ────────────────────────────────────────────────────────────
-  console.log("Happy path → returning shipping options");
+  // ── Zip 95131: 2 shipping options ─────────────────────────────────────────
+  if (postalCode === "95131") {
+    console.log("Zip 95131 → returning 2 shipping options");
+    return res.status(200).json({
+      id: body.id,
+      amount: { currency_code: "USD", value: "32.00" },
+      shipping_options: [
+        {
+          id: "1",
+          amount: { currency_code: "USD", value: "0.00" },
+          type: "SHIPPING",
+          description: "Free Shipping",
+          selected: true
+        },
+        {
+          id: "2",
+          amount: { currency_code: "USD", value: "9.99" },
+          type: "SHIPPING",
+          description: "Express Shipping",
+          selected: false
+        }
+      ]
+    });
+  }
+
+  // ── Default: 1 shipping option ────────────────────────────────────────────
+  console.log("Default zip → returning 1 shipping option");
   return res.status(200).json({
     id: body.id,
-    amount: {
-    currency_code: "USD",
-    value: "10.00"
-    },
+    amount: { currency_code: "USD", value: "32.00" },
     shipping_options: [
-    {
-      id: "1",
-      amount: {
-        currency_code: "USD",
-        value: "0.00"
-      },
-      type: "SHIPPING",
-      description: "Free Shipping",
-      selected: true
-    }
+      {
+        id: "1",
+        amount: { currency_code: "USD", value: "0.00" },
+        type: "SHIPPING",
+        description: "Free Shipping",
+        selected: true
+      }
     ]
   });
 });
