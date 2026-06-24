@@ -5,7 +5,7 @@ app.use(express.json());
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 // Zip codes that should return ADDRESS_ERROR
-const BLOCKED_ZIP_CODES = ["29200", "29201", "29202"]; // customize as needed
+const BLOCKED_ZIP_CODES = ["29200", "95122", "95123"]; // customize as needed
 
 // Default shipping options returned on a happy-path address
 const DEFAULT_SHIPPING_OPTIONS = [
