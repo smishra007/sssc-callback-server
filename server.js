@@ -5,7 +5,7 @@ app.use(express.json());
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 // Zip codes that should return ADDRESS_ERROR
-const BLOCKED_ZIP_CODES = ["29200", "95122", "95123"]; // customize as needed
+const BLOCKED_ZIP_CODES = ["29200", "29201", "95123"]; // customize as needed
 
 // Default shipping options returned on a happy-path address
 const DEFAULT_SHIPPING_OPTIONS = [
@@ -36,9 +36,10 @@ app.post("/order-update-callback", (req, res) => {
 
   console.log("──────────────────────────────────────");
   console.log("Incoming callback payload:");
-  console.log("FULL BODY:",JSON.stringify(body, null, 2));
-   console.log("Keys at root level:", Object.keys(body));
+  console.log(JSON.stringify(body, null, 2));
   console.log("──────────────────────────────────────");
+
+  // Extract shipping address from the callback payload
   const shippingAddress =
     body?.shipping_address ||
     body?.purchase_units?.[0]?.shipping?.address ||
@@ -68,7 +69,24 @@ app.post("/order-update-callback", (req, res) => {
   // ── Happy path: return shipping options ───────────────────────────────────
   console.log("Happy path → returning shipping options");
   return res.status(200).json({
-    shipping_options: DEFAULT_SHIPPING_OPTIONS,
+    purchase_units: [
+      {
+        shipping: {
+          options: DEFAULT_SHIPPING_OPTIONS,
+        },
+        amount: {
+          currency_code: "USD",
+          value: "32.00",
+          breakdown: {
+            item_total:   { currency_code: "USD", value: "29.00" },
+            tax_total:    { currency_code: "USD", value: "3.00" },
+            handling:     { currency_code: "USD", value: "1.00" },
+            discount:     { currency_code: "USD", value: "1.00" },
+            shipping:     { currency_code: "USD", value: "0.00" }, // updates when option changes
+          },
+        },
+      },
+    ],
   });
 });
 
