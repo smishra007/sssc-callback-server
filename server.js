@@ -4,10 +4,8 @@ const app = express();
 app.use(express.json());
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-// Zip codes that should return ADDRESS_ERROR
-const BLOCKED_ZIP_CODES = ["29200", "29201", "95123"]; // customize as needed
+const BLOCKED_ZIP_CODES = ["29200", "29201", "95123"];
 
-// Default shipping options returned on a happy-path address
 const DEFAULT_SHIPPING_OPTIONS = [
   {
     id: "SHIP_123",
@@ -39,22 +37,14 @@ app.post("/order-update-callback", (req, res) => {
   console.log(JSON.stringify(body, null, 2));
   console.log("──────────────────────────────────────");
 
-  // Extract shipping address from the callback payload
-  const shippingAddress =
-    body?.shipping_address ||
-    body?.purchase_units?.[0]?.shipping?.address ||
-    null;
-
-  const postalCode =
-    shippingAddress?.postal_code ||
-    shippingAddress?.postcode ||
-    null;
+  const shippingAddress = body?.shipping_address || null;
+  const postalCode = shippingAddress?.postal_code || null;
 
   console.log(`Postal code received: ${postalCode}`);
 
-  // ── ADDRESS_ERROR: blocked zip code ───────────────────────────────────────
+  // ── ADDRESS_ERROR ─────────────────────────────────────────────────────────
   if (postalCode && BLOCKED_ZIP_CODES.includes(postalCode)) {
-    console.log(`Blocked zip code detected: ${postalCode} → returning ADDRESS_ERROR`);
+    console.log(`Blocked zip: ${postalCode} → ADDRESS_ERROR`);
     return res.status(422).json({
       name: "UNPROCESSABLE_ENTITY",
       details: [
@@ -66,26 +56,18 @@ app.post("/order-update-callback", (req, res) => {
     });
   }
 
-  // ── Happy path: return shipping options ───────────────────────────────────
+  // ── Happy path ────────────────────────────────────────────────────────────
   console.log("Happy path → returning shipping options");
   return res.status(200).json({
     id: body.id,
     purchase_units: [
       {
-        reference_id: (body.purchase_units && body.purchase_units[0] && body.purchase_units[0].reference_id) || "default",
         shipping: {
           options: DEFAULT_SHIPPING_OPTIONS,
         },
         amount: {
           currency_code: "USD",
-          value: "32.00",
-          breakdown: {
-            item_total: { currency_code: "USD", value: "29.00" },
-            tax_total:  { currency_code: "USD", value: "3.00" },
-            handling:   { currency_code: "USD", value: "1.00" },
-            discount:   { currency_code: "USD", value: "1.00" },
-            shipping:   { currency_code: "USD", value: "0.00" },
-          },
+          value: "32.00",  // flat total, no breakdown
         },
       },
     ],
