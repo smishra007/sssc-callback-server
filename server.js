@@ -69,8 +69,10 @@ app.post("/order-update-callback", (req, res) => {
   // ── Happy path: return shipping options ───────────────────────────────────
   console.log("Happy path → returning shipping options");
   return res.status(200).json({
+    id: body.id,
     purchase_units: [
       {
+        reference_id: (body.purchase_units && body.purchase_units[0] && body.purchase_units[0].reference_id) || "default",
         shipping: {
           options: DEFAULT_SHIPPING_OPTIONS,
         },
@@ -78,11 +80,11 @@ app.post("/order-update-callback", (req, res) => {
           currency_code: "USD",
           value: "32.00",
           breakdown: {
-            item_total:   { currency_code: "USD", value: "29.00" },
-            tax_total:    { currency_code: "USD", value: "3.00" },
-            handling:     { currency_code: "USD", value: "1.00" },
-            discount:     { currency_code: "USD", value: "1.00" },
-            shipping:     { currency_code: "USD", value: "0.00" }, // updates when option changes
+            item_total: { currency_code: "USD", value: "29.00" },
+            tax_total:  { currency_code: "USD", value: "3.00" },
+            handling:   { currency_code: "USD", value: "1.00" },
+            discount:   { currency_code: "USD", value: "1.00" },
+            shipping:   { currency_code: "USD", value: "0.00" },
           },
         },
       },
