@@ -36,10 +36,9 @@ app.post("/order-update-callback", (req, res) => {
 
   console.log("──────────────────────────────────────");
   console.log("Incoming callback payload:");
-  console.log(JSON.stringify(body, null, 2));
+  console.log("FULL BODY:",JSON.stringify(body, null, 2));
+   console.log("Keys at root level:", Object.keys(body));
   console.log("──────────────────────────────────────");
-
-  // Extract shipping address from the callback payload
   const shippingAddress =
     body?.shipping_address ||
     body?.purchase_units?.[0]?.shipping?.address ||
