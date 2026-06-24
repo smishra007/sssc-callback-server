@@ -60,17 +60,22 @@ app.post("/order-update-callback", (req, res) => {
   console.log("Happy path → returning shipping options");
   return res.status(200).json({
     id: body.id,
-    purchase_units: [
-      {
-        shipping: {
-          options: DEFAULT_SHIPPING_OPTIONS,
-        },
-        amount: {
-          currency_code: "USD",
-          value: "32.00",  // flat total, no breakdown
-        },
+    amount: {
+    currency_code: USD,
+    value: 10.00
+    },
+    shipping_options: [
+    {
+      id: 1,
+      amount: {
+        currency_code: USD,
+        value: 0.00
       },
-    ],
+      type: SHIPPING,
+      description: Free Shipping,
+      selected: true
+    }
+    ]
   });
 });
 
